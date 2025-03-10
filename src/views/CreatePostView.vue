@@ -54,33 +54,40 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useBlogStore } from '@/stores/blog'
+import type { NewBlogPost } from '@/stores/blog'
 
-export default {
+export default defineComponent({
   name: 'CreatePostView',
-  data() {
+  setup() {
+    const router = useRouter()
+    const blogStore = useBlogStore()
+
+    const post = ref<NewBlogPost>({
+      title: '',
+      author: '',
+      content: ''
+    })
+
+    const isFormValid = computed((): boolean => {
+      return !!post.value.title && !!post.value.author && !!post.value.content
+    })
+
+    const createPost = (): void => {
+      if (isFormValid.value) {
+        blogStore.createPost(post.value)
+        router.push('/')
+      }
+    }
+
     return {
-      post: {
-        title: '',
-        author: '',
-        content: ''
-      }
-    }
-  },
-  computed: {
-    isFormValid() {
-      return this.post.title && this.post.author && this.post.content
-    }
-  },
-  methods: {
-    createPost() {
-      if (this.isFormValid) {
-        const blogStore = useBlogStore()
-        blogStore.createPost(this.post)
-        this.$router.push('/')
-      }
+      post,
+      isFormValid,
+      createPost
     }
   }
-}
+})
 </script>

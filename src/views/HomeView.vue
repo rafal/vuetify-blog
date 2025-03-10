@@ -62,18 +62,26 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, computed, ref } from 'vue'
 import { useBlogStore } from '@/stores/blog'
-import { computed, ref } from 'vue'
 
-export default {
+interface BlogPost {
+  id: string;
+  title: string;
+  author: string;
+  content: string;
+  date: string;
+}
+
+export default defineComponent({
   name: 'HomeView',
   setup() {
     const blogStore = useBlogStore()
     const searchQuery = ref('')
 
-    const allPosts = computed(() => blogStore.getAllPosts)
-    const posts = computed(() => {
+    const allPosts = computed((): BlogPost[] => blogStore.getAllPosts)
+    const posts = computed((): BlogPost[] => {
       if (!searchQuery.value) return allPosts.value
 
       const query = searchQuery.value.toLowerCase()
@@ -84,14 +92,18 @@ export default {
       )
     })
 
-    const deletePost = (id) => {
+    const deletePost = (id: string): void => {
       if (confirm('Are you sure you want to delete this post?')) {
         blogStore.removePost(id)
       }
     }
 
-    const formatDate = (dateString) => {
-      const options = { year: 'numeric', month: 'long', day: 'numeric' }
+    const formatDate = (dateString: string): string => {
+      const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }
       return new Date(dateString).toLocaleDateString(undefined, options)
     }
 
@@ -102,5 +114,5 @@ export default {
       formatDate
     }
   }
-}
+})
 </script>

@@ -18,7 +18,7 @@
           @submit.prevent="savePost"
         >
           <v-text-field
-            v-model="post.title"
+            v-model="editedPost.title"
             label="Title"
             required
             :rules="[v => !!v || 'Title is required']"
@@ -61,12 +61,21 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, computed, reactive } from 'vue'
 import { useBlogStore } from '@/stores/blog'
-import { computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 
-export default {
+// Define the interface locally
+interface BlogPost {
+  id: string;
+  title: string;
+  author: string;
+  content: string;
+  date: string;
+}
+
+export default defineComponent({
   name: 'EditPostView',
   props: {
     id: {
@@ -78,10 +87,10 @@ export default {
     const blogStore = useBlogStore()
     const router = useRouter()
 
-    const post = computed(() => blogStore.getPostById(props.id))
+    const post = computed((): BlogPost | undefined => blogStore.getPostById(props.id))
 
     // Create a reactive copy of the post
-    const editedPost = reactive({
+    const editedPost = reactive<BlogPost>({
       id: '',
       title: '',
       author: '',
@@ -97,11 +106,11 @@ export default {
       router.push('/')
     }
 
-    const isFormValid = computed(() => {
-      return editedPost.title && editedPost.author && editedPost.content
+    const isFormValid = computed((): boolean => {
+      return Boolean(editedPost.title && editedPost.author && editedPost.content)
     })
 
-    const savePost = () => {
+    const savePost = (): void => {
       if (isFormValid.value) {
         blogStore.updatePost(editedPost)
         router.push('/')
@@ -115,5 +124,5 @@ export default {
       savePost
     }
   }
-}
+})
 </script>
