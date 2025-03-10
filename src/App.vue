@@ -19,6 +19,12 @@
       >
         Create Post
       </v-btn>
+      <v-btn
+        icon
+        @click="toggleTheme"
+      >
+        <v-icon>{{ isDarkTheme ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
+      </v-btn>
     </v-app-bar>
 
     <v-main>
@@ -45,7 +51,21 @@
 export default {
   name: 'App',
   data: () => ({
-    //
+    isDarkTheme: false,
   }),
+  created() {
+    const storedTheme = localStorage.getItem('vuetify-theme');
+    if (storedTheme) {
+      this.isDarkTheme = storedTheme === 'dark';
+      this.$vuetify.theme.global.name = this.isDarkTheme ? 'dark' : 'light';
+    }
+  },
+  methods: {
+    toggleTheme() {
+      this.isDarkTheme = !this.isDarkTheme;
+      this.$vuetify.theme.global.name = this.isDarkTheme ? 'dark' : 'light';
+      localStorage.setItem('vuetify-theme', this.isDarkTheme ? 'dark' : 'light');
+    }
+  },
 };
 </script>

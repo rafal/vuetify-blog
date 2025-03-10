@@ -13,17 +13,10 @@ import App from './App.vue'
 // Composables
 import { createApp } from 'vue'
 
-// Import our store and router
-import store from './store'
-import router from './router'
-
+// Create the app
 const app = createApp(App)
 
-// Register plugins
 registerPlugins(app)
 
-// Use store and router
-app.use(store)
-app.use(router)
-
+// Mount the app
 app.mount('#app')

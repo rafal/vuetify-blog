@@ -13,11 +13,16 @@
 
     <v-card v-else>
       <v-card-text>
-        <v-form ref="form">
+        <v-form
+          ref="form"
+          @submit.prevent="savePost"
+        >
           <v-text-field
-            v-model="editedPost.title"
+            v-model="post.title"
             label="Title"
             required
+            :rules="[v => !!v || 'Title is required']"
+            aria-label="Post title"
           />
 
           <v-text-field
@@ -57,7 +62,9 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
+import { useBlogStore } from '@/stores/blog'
+import { computed, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'EditPostView',
@@ -67,44 +74,45 @@ export default {
       required: true
     }
   },
-  data() {
-    return {
-      editedPost: {
-        id: '',
-        title: '',
-        author: '',
-        content: '',
-        date: ''
-      }
-    }
-  },
-  computed: {
-    ...mapGetters({
-      getPost: 'getPostById'
-    }),
-    post() {
-      return this.getPost(this.id)
-    },
-    isFormValid() {
-      return this.editedPost.title && this.editedPost.author && this.editedPost.content
-    }
-  },
-  created() {
-    if (this.post) {
-      this.editedPost = { ...this.post }
+  setup(props) {
+    const blogStore = useBlogStore()
+    const router = useRouter()
+
+    const post = computed(() => blogStore.getPostById(props.id))
+
+    // Create a reactive copy of the post
+    const editedPost = reactive({
+      id: '',
+      title: '',
+      author: '',
+      content: '',
+      date: ''
+    })
+
+    // Populate the form with post data if it exists
+    if (post.value) {
+      Object.assign(editedPost, post.value)
     } else {
-      this.$router.push('/')
+      // Redirect if post not found
+      router.push('/')
     }
-  },
-  methods: {
-    ...mapActions({
-      updatePost: 'updatePost'
-    }),
-    savePost() {
-      if (this.isFormValid) {
-        this.updatePost(this.editedPost)
-        this.$router.push('/')
+
+    const isFormValid = computed(() => {
+      return editedPost.title && editedPost.author && editedPost.content
+    })
+
+    const savePost = () => {
+      if (isFormValid.value) {
+        blogStore.updatePost(editedPost)
+        router.push('/')
       }
+    }
+
+    return {
+      editedPost,
+      post,
+      isFormValid,
+      savePost
     }
   }
 }

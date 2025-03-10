@@ -6,11 +6,16 @@
 
     <v-card>
       <v-card-text>
-        <v-form ref="form">
+        <v-form
+          ref="form"
+          @submit.prevent="createPost"
+        >
           <v-text-field
             v-model="post.title"
             label="Title"
             required
+            :rules="[v => !!v || 'Title is required']"
+            aria-label="Post title"
           />
 
           <v-text-field
@@ -50,7 +55,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { useBlogStore } from '@/stores/blog'
 
 export default {
   name: 'CreatePostView',
@@ -69,12 +74,10 @@ export default {
     }
   },
   methods: {
-    ...mapActions({
-      addPost: 'createPost'
-    }),
     createPost() {
       if (this.isFormValid) {
-        this.addPost(this.post)
+        const blogStore = useBlogStore()
+        blogStore.createPost(this.post)
         this.$router.push('/')
       }
     }

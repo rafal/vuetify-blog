@@ -4,6 +4,16 @@
       Blog Posts
     </h1>
 
+    <v-text-field
+      v-model="searchQuery"
+      prepend-inner-icon="mdi-magnify"
+      label="Search posts"
+      clearable
+      single-line
+      hide-details
+      class="mb-4"
+    />
+
     <v-alert
       v-if="posts.length === 0"
       type="info"
@@ -31,15 +41,19 @@
               color="primary"
               :to="'/edit/' + post.id"
               text
+              aria-label="Edit post"
             >
-              Edit
+              <v-icon>mdi-pencil</v-icon>
+              <span class="ms-1">Edit</span>
             </v-btn>
             <v-btn
               color="error"
               text
+              aria-label="Delete post"
               @click="deletePost(post.id)"
             >
-              Delete
+              <v-icon>mdi-delete</v-icon>
+              <span class="ms-1">Delete</span>
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -49,27 +63,43 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
+import { useBlogStore } from '@/stores/blog'
+import { computed, ref } from 'vue'
 
 export default {
   name: 'HomeView',
-  computed: {
-    ...mapGetters({
-      posts: 'getAllPosts'
+  setup() {
+    const blogStore = useBlogStore()
+    const searchQuery = ref('')
+
+    const allPosts = computed(() => blogStore.getAllPosts)
+    const posts = computed(() => {
+      if (!searchQuery.value) return allPosts.value
+
+      const query = searchQuery.value.toLowerCase()
+      return allPosts.value.filter(post =>
+        post.title.toLowerCase().includes(query) ||
+        post.content.toLowerCase().includes(query) ||
+        post.author.toLowerCase().includes(query)
+      )
     })
-  },
-  methods: {
-    ...mapActions({
-      removePost: 'removePost'
-    }),
-    deletePost(id) {
+
+    const deletePost = (id) => {
       if (confirm('Are you sure you want to delete this post?')) {
-        this.removePost(id)
+        blogStore.removePost(id)
       }
-    },
-    formatDate(dateString) {
+    }
+
+    const formatDate = (dateString) => {
       const options = { year: 'numeric', month: 'long', day: 'numeric' }
       return new Date(dateString).toLocaleDateString(undefined, options)
+    }
+
+    return {
+      searchQuery,
+      posts,
+      deletePost,
+      formatDate
     }
   }
 }
